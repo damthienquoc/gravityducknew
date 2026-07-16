@@ -2,22 +2,39 @@ package com.gravityducknew;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private boolean running = false;
 
+    // [SỬA ĐỔI 1]: Khởi tạo một đối tượng Player tại tọa độ (300, 100)
+    private Player player = new Player(300, 100);
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(Utils.WIDTH, Utils.HEIGHT));
-        this.setBackground(Color.BLACK); // Nền đen huyền bí
-        this.setFocusable(true); // Nhận tín hiệu từ bàn phím
+        this.setBackground(Color.BLACK);
+        this.setFocusable(true);
 
-        // Sự kiện chuyển từ MENU vào game khi bấm ENTER
+        // [SỬA ĐỔI 2]: Lắng nghe sự kiện bàn phím và chuyển tiếp cho Player
         this.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (Utils.gameState == Utils.GameState.MENU && e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+            public void keyPressed(KeyEvent e) {
+                // Nếu đang ở Menu và bấm Enter -> Vào game
+                if (Utils.gameState == Utils.GameState.MENU && e.getKeyCode() == KeyEvent.VK_ENTER) {
                     Utils.gameState = Utils.GameState.PLAYING;
+                }
+
+                // Nếu đang chơi game -> Gửi phím bấm sang cho Player xử lý
+                if (Utils.gameState == Utils.GameState.PLAYING) {
+                    player.handleKeyPressed(e);
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (Utils.gameState == Utils.GameState.PLAYING) {
+                    player.handleKeyReleased(e);
                 }
             }
         });
@@ -26,27 +43,29 @@ public class GamePanel extends JPanel implements Runnable {
     public void startGameThread() {
         gameThread = new Thread(this);
         running = true;
-        gameThread.start(); // Kích hoạt luồng chạy hàm run() dưới đây
+        gameThread.start();
     }
 
     @Override
     public void run() {
-        // Tính toán khoảng thời gian cần thiết cho mỗi khung hình (tính bằng nano giây)
         long targetTime = 1000000000L / Utils.TARGET_FPS;
         long lastTime = System.nanoTime();
 
         while (running) {
             long now = System.nanoTime();
             if (now - lastTime >= targetTime) {
-                update();  // 1. Cập nhật logic (vị trí nhân vật, va chạm...)
-                repaint(); // 2. Yêu cầu vẽ lại màn hình (gọi hàm paintComponent)
+                update();
+                repaint();
                 lastTime += targetTime;
             }
         }
     }
 
     private void update() {
-        // Giai đoạn sau sẽ cập nhật nhân vật tại đây
+        // [SỬA ĐỔI 3]: Cập nhật chuyển động của Player liên tục khi đang chơi
+        if (Utils.gameState == Utils.GameState.PLAYING) {
+            player.update();
+        }
     }
 
     @Override
@@ -60,9 +79,10 @@ public class GamePanel extends JPanel implements Runnable {
             g2d.drawString("GRAVITY DUCK CLONE", 180, 200);
             g2d.setFont(new Font("Arial", Font.PLAIN, 16));
             g2d.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
-        } else if (Utils.gameState == Utils.GameState.PLAYING) {
-            g2d.setColor(Color.GREEN);
-            g2d.drawString("Đã vào game! Thiết lập nhân vật ở bước tiếp theo...", 50, 50);
+        }
+        // [SỬA ĐỔI 4]: Vẽ Player lên màn hình khi đang chơi
+        else if (Utils.gameState == Utils.GameState.PLAYING) {
+            player.draw(g2d);
         }
         g2d.dispose();
     }
