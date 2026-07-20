@@ -40,20 +40,20 @@ public class Player {
         gr.setColor(Color.YELLOW);
         gr.fillRect((int) vTriX, (int) vTriY, (int) kichThuoc, (int) kichThuoc);
     }
-
+    //xử lý bàn phím khi ấn
     public void handleKeyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
-            huongDiChuyen = -1; // Ấn nút qua trái
+            huongDiChuyen = -1;
         }
         if (key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) {
-            huongDiChuyen = 1;  // Ấn nút qua phải
+            huongDiChuyen = 1;
         }
 
 
     }
 
-    // Xử lý khi NGƯỜI CHƠI THẢ TAY KHỎI PHÍM
+    // xử lý bàn phím khi thả
     public void handleKeyReleased(KeyEvent e) {
         int key = e.getKeyCode();
         // Chỉ dừng lại khi phím thả ra trùng với hướng đang di chuyển

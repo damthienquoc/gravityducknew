@@ -8,7 +8,6 @@ public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private boolean running = false;
 
-    // [SỬA ĐỔI 1]: Khởi tạo một đối tượng Player tại tọa độ (300, 100)
     private Player player = new Player(300, 100);
 
     public GamePanel() {
@@ -16,16 +15,15 @@ public class GamePanel extends JPanel implements Runnable {
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
 
-        // [SỬA ĐỔI 2]: Lắng nghe sự kiện bàn phím và chuyển tiếp cho Player
         this.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                // Nếu đang ở Menu và bấm Enter -> Vào game
+                // bấm Enter -> Vào game
                 if (Utils.gameState == Utils.GameState.MENU && e.getKeyCode() == KeyEvent.VK_ENTER) {
                     Utils.gameState = Utils.GameState.PLAYING;
                 }
 
-                // Nếu đang chơi game -> Gửi phím bấm sang cho Player xử lý
+                //phím bấm sang cho Player xử lý
                 if (Utils.gameState == Utils.GameState.PLAYING) {
                     player.handleKeyPressed(e);
                 }
@@ -62,7 +60,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void update() {
-        // [SỬA ĐỔI 3]: Cập nhật chuyển động của Player liên tục khi đang chơi
         if (Utils.gameState == Utils.GameState.PLAYING) {
             player.update();
         }
@@ -80,7 +77,6 @@ public class GamePanel extends JPanel implements Runnable {
             g2d.setFont(new Font("Arial", Font.PLAIN, 16));
             g2d.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
         }
-        // [SỬA ĐỔI 4]: Vẽ Player lên màn hình khi đang chơi
         else if (Utils.gameState == Utils.GameState.PLAYING) {
             player.draw(g2d);
         }
