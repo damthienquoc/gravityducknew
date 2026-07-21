@@ -6,10 +6,12 @@ import java.awt.event.KeyEvent;
 public class Player {
     public float vTriX, vTriY;
     public float vTocX, vTocY;
-    public final float trongLuc = 0.4f; //trọng lực hút xuống
+    public final float gtTrongLuc = 0.4f; //trọng lực
     public final float tocDo = 5f;
     public final float kichThuoc = 32;
     public int huongDiChuyen = 0; // 0 là đứng yên, 1 là sang trái, -1 là sang phải
+    public boolean huongTrongLuc = false;
+    public boolean daoChieu = false;
 
     public Player(float vTriX, float vTriY) {
         this.vTriX = vTriX;
@@ -17,6 +19,9 @@ public class Player {
     }
 
     public void update() {
+
+        float trongLuc = huongTrongLuc ? -gtTrongLuc : gtTrongLuc;
+
         vTocY += trongLuc;
         vTocX = tocDo * huongDiChuyen;
 
@@ -24,7 +29,8 @@ public class Player {
         handleHorizontalCollision();
         vTriY += vTocY;
         handleVerticalCollision();
-        if (vTocY > 10f) vTocY = 10f;
+        if (huongTrongLuc && vTocY < -12.0f) vTocY = -12.0f;
+        if (!huongTrongLuc && vTocY > 12.0f) vTocY = 12.0f;
     }
 
     public void draw(Graphics2D gr) {
@@ -41,6 +47,13 @@ public class Player {
             huongDiChuyen = 1;
         }
 
+        if (key == KeyEvent.VK_SPACE) {
+            if (daoChieu) {
+                if (huongTrongLuc) huongTrongLuc = false;
+                else huongTrongLuc = true;
+                daoChieu = false;
+            }
+        }
 
     }
 
@@ -78,9 +91,11 @@ public class Player {
                 if(Utils.mapData[hang][cot] == Utils.TILE_WALL){
                     if(vTocY > 0){
                         vTriY = hang * Utils.TILE_SIZE - kichThuoc;
+                        daoChieu = true;
                     }
                     else if (vTocY < 0){
                         vTriY = (hang + 1) * Utils.TILE_SIZE;
+                        daoChieu = true;
                     }
                     vTocY = 0;
                 }
