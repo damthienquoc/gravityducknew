@@ -9,6 +9,7 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean running = false;
 
     private Player player = new Player(300, 100);
+    private Map map = new Map();
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(Utils.WIDTH, Utils.HEIGHT));
@@ -68,18 +69,19 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+        Graphics2D gd = (Graphics2D) g;
 
         if (Utils.gameState == Utils.GameState.MENU) {
-            g2d.setColor(Color.WHITE);
-            g2d.setFont(new Font("Arial", Font.BOLD, 24));
-            g2d.drawString("GRAVITY DUCK CLONE", 180, 200);
-            g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-            g2d.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
+            gd.setColor(Color.WHITE);
+            gd.setFont(new Font("Arial", Font.BOLD, 24));
+            gd.drawString("GRAVITY DUCK CLONE", 180, 200);
+            gd.setFont(new Font("Arial", Font.PLAIN, 16));
+            gd.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
         }
         else if (Utils.gameState == Utils.GameState.PLAYING) {
-            player.draw(g2d);
+            map.drawMap(gd);
+            player.draw(gd);
         }
-        g2d.dispose();
+        gd.dispose();
     }
 }

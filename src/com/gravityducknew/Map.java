@@ -9,7 +9,7 @@ public class Map {
             for(int cot = 0; cot < Utils.mapData[dong].length; cot++) {
                 if(Utils.mapData[dong][cot] == Utils.TILE_EMPTY) {
                     gd.setColor(Color.DARK_GRAY);
-                    gd.fillRect(dong * );
+                    gd.fillRect(cot * Utils.TILE_SIZE, dong * Utils.TILE_SIZE, Utils.TILE_SIZE, Utils.TILE_SIZE);
                 }
             }
         }

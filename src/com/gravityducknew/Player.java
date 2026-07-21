@@ -19,21 +19,12 @@ public class Player {
     public void update() {
         vTocY += trongLuc;
         vTocX = tocDo * huongDiChuyen;
+
         vTriX += vTocX;
+        handleHorizontalCollision();
         vTriY += vTocY;
-
+        handleVerticalCollision();
         if (vTocY > 10f) vTocY = 10f;
-
-        if (vTriX < 0) vTriX = 0;
-        if (vTriX >= Utils.WIDTH - kichThuoc) vTriX = Utils.WIDTH - kichThuoc;
-        if (vTriY <= 0 + kichThuoc) {
-            vTriY = 0;
-            vTocY = 0;
-        }
-        if (vTriY >= Utils.HEIGHT - kichThuoc) {
-            vTriY = Utils.HEIGHT - kichThuoc;
-            vTocY = 0;
-        }
     }
 
     public void draw(Graphics2D gr) {
@@ -62,6 +53,38 @@ public class Player {
         }
         if ((key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) && huongDiChuyen == 1) {
             huongDiChuyen = 0;
+        }
+    }
+    //xử lí va chạm ngang
+    public void handleHorizontalCollision(){
+        for(int hang =  (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
+            for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
+                if(Utils.mapData[hang][cot] == Utils.TILE_WALL){
+                    if(vTocX > 0){
+                        vTriX = cot * Utils.TILE_SIZE - kichThuoc;
+                    }
+                    else if (vTocX < 0){
+                        vTriX = (cot + 1) * Utils.TILE_SIZE;
+                    }
+                    vTocX = 0;
+                }
+            }
+        }
+    }
+    //xử lí va chạm dọc
+    public void handleVerticalCollision(){
+        for(int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
+            for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
+                if(Utils.mapData[hang][cot] == Utils.TILE_WALL){
+                    if(vTocY > 0){
+                        vTriY = hang * Utils.TILE_SIZE - kichThuoc;
+                    }
+                    else if (vTocY < 0){
+                        vTriY = (hang + 1) * Utils.TILE_SIZE;
+                    }
+                    vTocY = 0;
+                }
+            }
         }
     }
 }
