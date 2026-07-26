@@ -36,6 +36,7 @@ public class Player {
         if (huongTrongLuc && vTocY < -12.0f) vTocY = -12.0f;
         if (!huongTrongLuc && vTocY > 12.0f) vTocY = 12.0f;
 
+        handleTrapCollision(levelManager);
         handleEggCollision(levelManager);
     }
 
@@ -114,6 +115,18 @@ public class Player {
             for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
                 if(mapData[hang][cot] == Utils.TILE_EGG){
                     levelManager.nextLevel();
+                    reset();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void handleTrapCollision(LevelManager levelManager){
+        int[][] mapData = levelManager.mapHienTai;
+        for(int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++){
+            for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
+                if(mapData[hang][cot] == Utils.TILE_TRAP){
                     reset();
                     return;
                 }

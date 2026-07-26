@@ -13,6 +13,7 @@ public class Utils {
     public static final int TILE_EMPTY = 0;
     public static final int TILE_WALL = 1;
     public static final int TILE_EGG = 2;
+    public static final int TILE_TRAP = 3;
 
     public static int[][] mapData = {
             {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},

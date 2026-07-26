@@ -18,6 +18,12 @@ public class Map {
                     gd.setColor(Color.GREEN);
                     gd.fillOval(cot * Utils.TILE_SIZE + 6, dong * Utils.TILE_SIZE +4,Utils.TILE_SIZE - 12, Utils.TILE_SIZE - 8);
                 }
+                else if(mapData[dong][cot] == Utils.TILE_TRAP){
+                    gd.setColor(Color.RED);
+                    int[] x = {cot * Utils.TILE_SIZE, cot * Utils.TILE_SIZE + Utils.TILE_SIZE / 2, cot * Utils.TILE_SIZE + Utils.TILE_SIZE};
+                    int [] y = {dong * Utils.TILE_SIZE + Utils.TILE_SIZE, dong * Utils.TILE_SIZE, dong * Utils.TILE_SIZE + Utils.TILE_SIZE};
+                    gd.fillPolygon(x,y,3);
+                }
             }
         }
     }

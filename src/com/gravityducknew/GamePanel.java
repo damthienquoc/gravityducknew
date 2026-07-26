@@ -8,7 +8,7 @@ public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private boolean running = false;
 
-    private Player player = new Player(300, 100);
+    private Player player = new Player(96, 352);
     private Map map = new Map();
     private LevelManager levelManager = new LevelManager();
 
