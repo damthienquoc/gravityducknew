@@ -5,7 +5,7 @@ import java.awt.event.KeyEvent;
 
 public class Player {
     public float vTriX, vTriY;
-    public float vTocX, vTocY;
+    public float vTocX , vTocY;
     public final float gtTrongLuc = 0.4f; //trọng lực
     public final float tocDo = 5f;
     public final float kichThuoc = 32;
@@ -13,12 +13,16 @@ public class Player {
     public boolean huongTrongLuc = false;
     public boolean daoChieu = false;
 
-    public Player(float vTriX, float vTriY) {
-        this.vTriX = vTriX;
-        this.vTriY = vTriY;
+    public final float vTriBatDauX, vTriBatDauY;
+
+    public Player(float viTriBatDauX, float vTriBatDauY) {
+        this.vTriBatDauX = viTriBatDauX;
+        this.vTriBatDauY = vTriBatDauY;
+        vTriX = vTriBatDauX;
+        vTriY = vTriBatDauY;
     }
 
-    public void update() {
+    public void update(LevelManager levelManager) {
 
         float trongLuc = huongTrongLuc ? -gtTrongLuc : gtTrongLuc;
 
@@ -26,11 +30,13 @@ public class Player {
         vTocX = tocDo * huongDiChuyen;
 
         vTriX += vTocX;
-        handleHorizontalCollision();
+        handleHorizontalCollision(levelManager.mapHienTai);
         vTriY += vTocY;
-        handleVerticalCollision();
+        handleVerticalCollision(levelManager.mapHienTai);
         if (huongTrongLuc && vTocY < -12.0f) vTocY = -12.0f;
         if (!huongTrongLuc && vTocY > 12.0f) vTocY = 12.0f;
+
+        handleEggCollision(levelManager);
     }
 
     public void draw(Graphics2D gr) {
@@ -69,10 +75,10 @@ public class Player {
         }
     }
     //xử lí va chạm ngang
-    public void handleHorizontalCollision(){
+    public void handleHorizontalCollision(int[][] mapData){
         for(int hang =  (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
             for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
-                if(Utils.mapData[hang][cot] == Utils.TILE_WALL){
+                if(mapData[hang][cot] == Utils.TILE_WALL){
                     if(vTocX > 0){
                         vTriX = cot * Utils.TILE_SIZE - kichThuoc;
                     }
@@ -85,10 +91,10 @@ public class Player {
         }
     }
     //xử lí va chạm dọc
-    public void handleVerticalCollision(){
+    public void handleVerticalCollision(int[][] mapData){
         for(int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
             for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
-                if(Utils.mapData[hang][cot] == Utils.TILE_WALL){
+                if(mapData[hang][cot] == Utils.TILE_WALL){
                     if(vTocY > 0){
                         vTriY = hang * Utils.TILE_SIZE - kichThuoc;
                         daoChieu = true;
@@ -101,5 +107,25 @@ public class Player {
                 }
             }
         }
+    }
+    public void handleEggCollision(LevelManager levelManager){
+        int[][] mapData = levelManager.mapHienTai;
+        for(int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++){
+            for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
+                if(mapData[hang][cot] == Utils.TILE_EGG){
+                    levelManager.nextLevel();
+                    reset();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void reset(){
+        vTriX = vTriBatDauX;
+        vTriY = vTriBatDauY;
+        vTocX = 0;
+        vTocY = 0;
+        huongTrongLuc = false;
     }
 }

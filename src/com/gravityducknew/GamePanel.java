@@ -10,6 +10,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player = new Player(300, 100);
     private Map map = new Map();
+    private LevelManager levelManager = new LevelManager();
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(Utils.WIDTH, Utils.HEIGHT));
@@ -62,7 +63,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void update() {
         if (Utils.gameState == Utils.GameState.PLAYING) {
-            player.update();
+            player.update(levelManager);
         }
     }
 
@@ -74,12 +75,12 @@ public class GamePanel extends JPanel implements Runnable {
         if (Utils.gameState == Utils.GameState.MENU) {
             gd.setColor(Color.WHITE);
             gd.setFont(new Font("Arial", Font.BOLD, 24));
-            gd.drawString("GRAVITY DUCK CLONE", 180, 200);
+            gd.drawString("      GRAVITY DUCK", 180, 200);
             gd.setFont(new Font("Arial", Font.PLAIN, 16));
             gd.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
         }
         else if (Utils.gameState == Utils.GameState.PLAYING) {
-            map.drawMap(gd);
+            map.drawMap(gd,levelManager);
             player.draw(gd);
         }
         gd.dispose();
