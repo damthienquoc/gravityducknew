@@ -24,6 +24,12 @@ public class Map {
                     int [] y = {dong * Utils.TILE_SIZE + Utils.TILE_SIZE, dong * Utils.TILE_SIZE, dong * Utils.TILE_SIZE + Utils.TILE_SIZE};
                     gd.fillPolygon(x,y,3);
                 }
+                else if (mapData[dong][cot] == Utils.TILE_ROTATE) {
+                    gd.setColor(Color.ORANGE);
+                    gd.fillRect(cot * Utils.TILE_SIZE + 4, dong * Utils.TILE_SIZE + 4, Utils.TILE_SIZE - 8, Utils.TILE_SIZE - 8);
+                    gd.setColor(Color.WHITE);
+                    gd.drawRect(cot * Utils.TILE_SIZE + 8, dong * Utils.TILE_SIZE + 8, Utils.TILE_SIZE - 16, Utils.TILE_SIZE - 16);
+                }
             }
         }
     }

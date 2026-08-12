@@ -10,9 +10,8 @@ public class Player {
     public final float tocDo = 5f;
     public final float kichThuoc = 32;
     public int huongDiChuyen = 0; // 0 là đứng yên, 1 là sang trái, -1 là sang phải
-    public boolean huongTrongLuc = false;
     public boolean daoChieu = false;
-
+    public Utils.Gravity gravity = Utils.Gravity.DOWN;
     public final float vTriBatDauX, vTriBatDauY;
 
     public Player(float viTriBatDauX, float vTriBatDauY) {
@@ -20,29 +19,47 @@ public class Player {
         this.vTriBatDauY = vTriBatDauY;
         vTriX = vTriBatDauX;
         vTriY = vTriBatDauY;
+        gravity = Utils.Gravity.DOWN;
     }
 
     public void update(LevelManager levelManager) {
 
-        float trongLuc = huongTrongLuc ? -gtTrongLuc : gtTrongLuc;
-
-        vTocY += trongLuc;
-        vTocX = tocDo * huongDiChuyen;
+        switch (gravity){
+            case DOWN:
+                vTocY += gtTrongLuc;
+                if(vTocY > 12f) vTocY = 12f;
+                vTocX *= huongDiChuyen;
+                break;
+            case UP:
+                vTocY -= gtTrongLuc;
+                if(vTocY < -12f) vTocY = -12f;
+                vTocX *= huongDiChuyen;
+                break;
+            case LEFT:
+                vTocX -= gtTrongLuc;
+                if (vTocX < -12.0f) vTocX = -12.0f;
+                vTocY = tocDo * huongDiChuyen;
+                break;
+            case RIGHT:
+                vTocX += gtTrongLuc;
+                if (vTocX > 12.0f) vTocX = 12.0f;
+                vTocY = tocDo * huongDiChuyen;
+                break;
+        }
 
         vTriX += vTocX;
         handleHorizontalCollision(levelManager.mapHienTai);
         vTriY += vTocY;
         handleVerticalCollision(levelManager.mapHienTai);
-        if (huongTrongLuc && vTocY < -12.0f) vTocY = -12.0f;
-        if (!huongTrongLuc && vTocY > 12.0f) vTocY = 12.0f;
+
 
         handleTrapCollision(levelManager);
         handleEggCollision(levelManager);
     }
 
-    public void draw(Graphics2D gr) {
-        gr.setColor(Color.YELLOW);
-        gr.fillRect((int) vTriX, (int) vTriY, (int) kichThuoc, (int) kichThuoc);
+    public void draw(Graphics2D gd) {
+        gd.setColor(Color.YELLOW);
+        gd.fillRect((int) vTriX, (int) vTriY, (int) kichThuoc, (int) kichThuoc);
     }
     //xử lý bàn phím khi ấn
     public void handleKeyPressed(KeyEvent e) {
@@ -134,11 +151,29 @@ public class Player {
         }
     }
 
+    public void rotate() {
+        switch (gravity) {
+            case UP:
+
+        }
+    }
+
+    public void handleRotateCollision(LevelManager levelManager){
+        int[][] mapData = levelManager.mapHienTai;
+        for(int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++){
+            for(int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++){
+                if(mapData[hang][cot] == Utils.TILE_ROTATE){
+
+                }
+            }
+        }
+    }
+
     public void reset(){
         vTriX = vTriBatDauX;
         vTriY = vTriBatDauY;
         vTocX = 0;
         vTocY = 0;
-        huongTrongLuc = false;
+        gravity = Utils.Gravity.DOWN;
     }
 }
