@@ -32,6 +32,6 @@ public class Utils {
     }
 
 
-    public enum GameState { MENU, PLAYING, PAUSE }
+    public enum GameState { MENU, PLAYING, PAUSE, WIN }
     public static GameState gameState = GameState.MENU;
 }

@@ -38,4 +38,11 @@ public class LevelManager {
         if(levelHienTai > maxLevel) levelHienTai = 1;
         loadLevel();
     }
+    public boolean isLastLevel() {
+        return levelHienTai >= maxLevel;
+    }
+    public void resetToFirstLevel() {
+        levelHienTai = 1;
+        loadLevel();
+    }
 }

@@ -101,6 +101,13 @@ public class GamePanel extends JPanel implements Runnable {
                         }
                     }
                 }
+                else if (Utils.gameState == Utils.GameState.WIN) {
+                    if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_ESCAPE) {
+                        levelManager.resetToFirstLevel();
+                        player.reset();
+                        Utils.gameState = Utils.GameState.MENU;
+                    }
+                }
             }
 
             @Override
@@ -171,6 +178,12 @@ public class GamePanel extends JPanel implements Runnable {
             drawAudioHUD(gd);
             drawPauseMenu(gd);
         }
+        else if (Utils.gameState == Utils.GameState.WIN) { // THÊM MÀN HÌNH WIN
+            map.drawMap(gd, levelManager);
+            player.draw(gd);
+            drawWinScreen(gd);
+        }
+
 
         gd.dispose();
     }
@@ -252,7 +265,26 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    // Hiển thị trạng thái âm thanh ở góc khi đang chơi
+    private void drawWinScreen(Graphics2D gd) {
+        // Lớp phủ tối mờ
+        gd.setColor(new Color(0, 0, 0, 200));
+        gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
+
+        // Dòng chữ chúc mừng
+        gd.setFont(new Font("Arial", Font.BOLD, 36));
+        gd.setColor(Color.YELLOW);
+        drawCenteredString(gd, "YOU WIN!", Utils.HEIGHT / 3);
+
+        gd.setFont(new Font("Arial", Font.PLAIN, 18));
+        gd.setColor(Color.WHITE);
+        drawCenteredString(gd, "Chúc mừng bạn đã hoàn thành tất cả các màn chơi!", Utils.HEIGHT / 2);
+
+        gd.setFont(new Font("Arial", Font.ITALIC, 14));
+        gd.setColor(Color.LIGHT_GRAY);
+        drawCenteredString(gd, "Nhấn ENTER để về Main Menu", Utils.HEIGHT - 80);
+    }
+
+    // Hiển thị trạng thái âm thanh ở góc khi đang
     private void drawAudioHUD(Graphics2D gd) {
         gd.setFont(new Font("Arial", Font.BOLD, 12));
         if (SoundManager.isMuted()) {
