@@ -101,7 +101,7 @@ public class Player {
         for (int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
             for (int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++) {
                 if (hang >= 0 && hang < mapData.length && cot >= 0 && cot < mapData[0].length) {
-                    if (mapData[hang][cot] == Utils.TILE_WALL) {
+                    if (mapData[hang][cot] == Utils.TILE_WALL1 || mapData[hang][cot] == Utils.TILE_WALL2 || mapData[hang][cot] == Utils.TILE_WALL3 || mapData[hang][cot] == Utils.TILE_WALL4) {
                         if (vTocX > 0) {
                             vTriX = cot * Utils.TILE_SIZE - kichThuoc;
                         } else if (vTocX < 0) {
@@ -124,7 +124,7 @@ public class Player {
         for (int hang = (int)(vTriY / Utils.TILE_SIZE); hang <= (vTriY + kichThuoc - 1) / Utils.TILE_SIZE; hang++) {
             for (int cot = (int)(vTriX / Utils.TILE_SIZE); cot <= (vTriX + kichThuoc - 1) / Utils.TILE_SIZE; cot++) {
                 if (hang >= 0 && hang < mapData.length && cot >= 0 && cot < mapData[0].length) {
-                    if (mapData[hang][cot] == Utils.TILE_WALL) {
+                    if (mapData[hang][cot] == Utils.TILE_WALL1 || mapData[hang][cot] == Utils.TILE_WALL2 || mapData[hang][cot] == Utils.TILE_WALL3 || mapData[hang][cot] == Utils.TILE_WALL4) {
                         if (vTocY > 0) {
                             vTriY = hang * Utils.TILE_SIZE - kichThuoc;
                         } else if (vTocY < 0) {
@@ -197,7 +197,7 @@ public class Player {
 
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
-                if (mapData[hang][cot] == Utils.TILE_EGG) {
+                if (mapData[hang][cot] == Utils.TILE_EGG1) {
                     levelManager.nextLevel();
                     reset();
                     return;
@@ -215,7 +215,7 @@ public class Player {
 
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
-                if (mapData[hang][cot] == Utils.TILE_TRAP) {
+                if (mapData[hang][cot] == Utils.TILE_TRAP1 || mapData[hang][cot] == Utils.TILE_TRAP2 || mapData[hang][cot] == Utils.TILE_TRAP3 || mapData[hang][cot] == Utils.TILE_TRAP4) {
                     reset();
                     return;
                 }

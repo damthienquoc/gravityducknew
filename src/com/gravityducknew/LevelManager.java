@@ -38,7 +38,4 @@ public class LevelManager {
         if(levelHienTai > maxLevel) levelHienTai = 1;
         loadLevel();
     }
-    public int getCurrentLevel() {
-        return levelHienTai;
-    }
 }
