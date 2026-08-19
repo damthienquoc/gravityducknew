@@ -1,44 +1,67 @@
 package com.gravityducknew;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.net.URL;
+import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 
 public class SoundManager {
 
-    // Clip nhạc nền để điều khiển dừng/phát
     private static Clip bgmClip;
+    private static boolean isMuted = false;
 
-    // Phát hiệu ứng âm thanh ngắn (SFX)
+    // Bật/Tắt âm thanh
+    public static void toggleMute() {
+        isMuted = !isMuted;
+        if (isMuted) {
+            if (bgmClip != null && bgmClip.isRunning()) {
+                bgmClip.stop(); // Ngắt nhạc khi Mute
+            }
+        } else {
+            if (bgmClip != null) {
+                bgmClip.start(); // Phát tiếp khi Unmute
+                bgmClip.loop(Clip.LOOP_CONTINUOUSLY);
+            }
+        }
+    }
+
+    public static boolean isMuted() {
+        return isMuted;
+    }
+
     public static void playSound(String path) {
+        if (isMuted) return; // Nếu đang Mute thì không phát hiệu ứng
+
         new Thread(() -> {
             try {
-                URL soundUrl = SoundManager.class.getResource(path);
-                if (soundUrl != null) {
-                    AudioInputStream ais = AudioSystem.getAudioInputStream(soundUrl);
-                    Clip clip = AudioSystem.getClip();
-                    clip.open(ais);
-                    clip.start();
-                } else {
-                    System.out.println("Lỗi: Không tìm thấy file âm thanh tại " + path);
-                }
+                InputStream audioSrc = SoundManager.class.getResourceAsStream(path);
+                if (audioSrc == null) return;
+
+                InputStream bufferedIn = new BufferedInputStream(audioSrc);
+                AudioInputStream ais = AudioSystem.getAudioInputStream(bufferedIn);
+
+                Clip clip = AudioSystem.getClip();
+                clip.open(ais);
+                clip.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();
     }
 
-    // Phát nhạc nền (BGM) lặp vô tận
     public static void playBGM(String path) {
         stopBGM();
         new Thread(() -> {
             try {
-                URL soundUrl = SoundManager.class.getResource(path);
-                if (soundUrl != null) {
-                    AudioInputStream ais = AudioSystem.getAudioInputStream(soundUrl);
-                    bgmClip = AudioSystem.getClip();
-                    bgmClip.open(ais);
+                InputStream audioSrc = SoundManager.class.getResourceAsStream(path);
+                if (audioSrc == null) return;
+
+                InputStream bufferedIn = new BufferedInputStream(audioSrc);
+                AudioInputStream ais = AudioSystem.getAudioInputStream(bufferedIn);
+
+                bgmClip = AudioSystem.getClip();
+                bgmClip.open(ais);
+
+                if (!isMuted) {
                     bgmClip.loop(Clip.LOOP_CONTINUOUSLY);
                     bgmClip.start();
                 }
@@ -48,9 +71,8 @@ public class SoundManager {
         }).start();
     }
 
-    // Tắt nhạc nền
     public static void stopBGM() {
-        if (bgmClip != null && bgmClip.isRunning()) {
+        if (bgmClip != null) {
             bgmClip.stop();
             bgmClip.close();
         }

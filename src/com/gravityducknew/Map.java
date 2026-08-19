@@ -26,7 +26,7 @@ public class Map {
             egg1 = eggs.getSubimage(0 , 0 , size , size );
             egg2 = eggs.getSubimage(0 , size , size , size );
 
-            trap1 = tiles.getSubimage(size * 9 , size * 3 , size , size );
+            trap1 = tiles.getSubimage(size * 9 , size * 3 + 16 , size , size - 16 );
             trap2 = tiles.getSubimage(size * 8 , size * 3 , size , size );
             trap3 = tiles.getSubimage(size * 7 , size * 3, size , size );
             trap4 = tiles.getSubimage(size * 10 , size * 3 , size , size );

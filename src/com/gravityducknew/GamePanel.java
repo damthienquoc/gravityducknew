@@ -14,33 +14,92 @@ public class GamePanel extends JPanel implements Runnable {
     private Map map = new Map();
     private LevelManager levelManager = new LevelManager();
 
-    // 1. MỚI: Biến lưu trữ ảnh nền Background
     private BufferedImage bgImage;
 
+    // Quản lý lựa chọn Menu chính (0: PLAY GAME, 1: SOUND, 2: EXIT)
+    private int selectedOption = 0;
+
+    // Quản lý lựa chọn Menu Pause (0: RESUME, 1: MAIN MENU)
+    private int selectedPauseOption = 0;
+
     public GamePanel() {
+        SoundManager.playBGM("/sound/BG.wav");
         this.setPreferredSize(new Dimension(Utils.WIDTH, Utils.HEIGHT));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
 
-        // 2. MỚI: Load ảnh nền từ thư mục res
         try {
             bgImage = ImageIO.read(getClass().getResourceAsStream("/image/BG.png"));
         } catch (Exception e) {
-            System.out.println("Lỗi: Không tìm thấy ảnh");
+            System.out.println("Lỗi: Không tìm thấy ảnh nền BG.png");
             e.printStackTrace();
         }
 
         this.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                // Bấm Enter -> Vào game
-                if (Utils.gameState == Utils.GameState.MENU && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    Utils.gameState = Utils.GameState.PLAYING;
+                int key = e.getKeyCode();
+
+                // Phím M: Bật/Tắt âm thanh nhanh
+                if (key == KeyEvent.VK_M) {
+                    SoundManager.toggleMute();
                 }
 
-                // Phím bấm sang cho Player xử lý
-                if (Utils.gameState == Utils.GameState.PLAYING) {
+                // 1. ĐANG Ở MENU CHÍNH
+                if (Utils.gameState == Utils.GameState.MENU) {
+                    if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
+                        selectedOption--;
+                        if (selectedOption < 0) selectedOption = 2;
+                    }
+                    if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
+                        selectedOption++;
+                        if (selectedOption > 2) selectedOption = 0;
+                    }
+                    if (key == KeyEvent.VK_ENTER) {
+                        if (selectedOption == 0) {
+                            Utils.gameState = Utils.GameState.PLAYING;
+                        } else if (selectedOption == 1) {
+                            SoundManager.toggleMute();
+                        } else if (selectedOption == 2) {
+                            System.exit(0);
+                        }
+                    }
+                }
+                // 2. ĐANG CHƠI GAME
+                else if (Utils.gameState == Utils.GameState.PLAYING) {
+                    // Bấm ESC hoặc P để Bật PAUSE
+                    if (key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_P) {
+                        Utils.gameState = Utils.GameState.PAUSE;
+                        player.stopMovement();
+                        selectedPauseOption = 0; // Reset con trỏ về RESUME
+                        return;
+                    }
                     player.handleKeyPressed(e);
+                }
+                // 3. ĐANG Ở TRẠNG THÁI PAUSE
+                else if (Utils.gameState == Utils.GameState.PAUSE) {
+                    // Bấm ESC hoặc P để Hủy PAUSE (Tiếp tục chơi)
+                    if (key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_P) {
+                        Utils.gameState = Utils.GameState.PLAYING;
+                        return;
+                    }
+
+                    if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
+                        selectedPauseOption--;
+                        if (selectedPauseOption < 0) selectedPauseOption = 1;
+                    }
+                    if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
+                        selectedPauseOption++;
+                        if (selectedPauseOption > 1) selectedPauseOption = 0;
+                    }
+                    if (key == KeyEvent.VK_ENTER) {
+                        if (selectedPauseOption == 0) {
+                            Utils.gameState = Utils.GameState.PLAYING; // Tiếp tục chơi
+                        } else if (selectedPauseOption == 1) {
+                            player.reset(); // Reset vị trí Player
+                            Utils.gameState = Utils.GameState.MENU; // Trở về Menu chính
+                        }
+                    }
                 }
             }
 
@@ -75,6 +134,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void update() {
+        // Chỉ cập nhật nhân vật khi đang chơi (không chạy khi Pause)
         if (Utils.gameState == Utils.GameState.PLAYING) {
             player.update(levelManager);
         }
@@ -85,36 +145,129 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D gd = (Graphics2D) g;
 
-        // BƯỚC A: VẼ BACKGROUND ĐẦU TIÊN (Cho cả MENU lẫn PLAYING)
+        // Bật làm mượt nét chữ và hình vẽ
+        gd.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        gd.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // VẼ BACKGROUND
         if (bgImage != null) {
-            // Co giãn ảnh phủ kín màn hình Game
             gd.drawImage(bgImage, 0, 0, Utils.WIDTH, Utils.HEIGHT, null);
         } else {
-            // Dự phòng nếu lỗi load ảnh
             gd.setColor(Color.BLACK);
             gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
         }
 
-        // BƯỚC B: VẼ GIAO DIỆN THEO TRẠNG THÁI
+        // VẼ THEO TRẠNG THÁI
         if (Utils.gameState == Utils.GameState.MENU) {
-            // Tô lớp phủ đen mờ để chữ Menu dễ nhìn hơn trên nền ảnh
-            gd.setColor(new Color(0, 0, 0, 150));
-            gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
-
-            gd.setColor(Color.WHITE);
-            gd.setFont(new Font("Arial", Font.BOLD, 24));
-            gd.drawString("      GRAVITY DUCK", 180, 200);
-            gd.setFont(new Font("Arial", Font.PLAIN, 16));
-            gd.drawString("Bấm ENTER để bắt đầu chơi", 210, 260);
-        }
-        else if (Utils.gameState == Utils.GameState.PLAYING) {
-            // BƯỚC C: Vẽ Map đè lên Background
+            drawMenu(gd);
+        } else if (Utils.gameState == Utils.GameState.PLAYING) {
             map.drawMap(gd, levelManager);
-
-            // BƯỚC D: Vẽ Player đè lên trên cùng
             player.draw(gd);
+            drawAudioHUD(gd);
+        } else if (Utils.gameState == Utils.GameState.PAUSE) {
+            // Giữ nguyên khung cảnh game ở dưới, đè menu Pause lên trên
+            map.drawMap(gd, levelManager);
+            player.draw(gd);
+            drawAudioHUD(gd);
+            drawPauseMenu(gd);
         }
 
         gd.dispose();
+    }
+
+    // --- HÀM VẼ MENU CHÍNH ---
+    private void drawMenu(Graphics2D gd) {
+        gd.setColor(new Color(0, 0, 0, 180));
+        gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
+
+        gd.setFont(new Font("Arial", Font.BOLD, 36));
+        gd.setColor(Color.YELLOW);
+        drawCenteredString(gd, "GRAVITY DUCK", Utils.HEIGHT / 5);
+
+        String soundStatus = SoundManager.isMuted() ? "SOUND: OFF" : "SOUND: ON";
+        String[] menuOptions = {"PLAY GAME", soundStatus, "EXIT"};
+
+        drawButtonList(gd, menuOptions, selectedOption, Utils.HEIGHT / 2 - 40);
+
+        gd.setFont(new Font("Arial", Font.ITALIC, 13));
+        gd.setColor(Color.LIGHT_GRAY);
+        drawCenteredString(gd, "Dùng W/S hoặc Mũi tên để di chuyển, ENTER để chọn", Utils.HEIGHT - 55);
+        drawCenteredString(gd, "Phím M: Bật/Tắt nhanh âm thanh", Utils.HEIGHT - 30);
+    }
+
+    // --- HÀM VẼ PAUSE MENU ---
+    private void drawPauseMenu(Graphics2D gd) {
+        // Lớp phủ đen mờ đè lên game
+        gd.setColor(new Color(0, 0, 0, 190));
+        gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
+
+        gd.setFont(new Font("Arial", Font.BOLD, 36));
+        gd.setColor(Color.ORANGE);
+        drawCenteredString(gd, "GAME PAUSED", Utils.HEIGHT / 4);
+
+        String[] pauseOptions = {"RESUME", "MAIN MENU"};
+        drawButtonList(gd, pauseOptions, selectedPauseOption, Utils.HEIGHT / 2 - 20);
+
+        gd.setFont(new Font("Arial", Font.ITALIC, 13));
+        gd.setColor(Color.LIGHT_GRAY);
+        drawCenteredString(gd, "Nhấn ESC hoặc P để tiếp tục chơi", Utils.HEIGHT - 50);
+    }
+
+    // --- HÀM DÙNG CHUNG ĐỂ VẼ NÚT BẤM ---
+    private void drawButtonList(Graphics2D gd, String[] options, int selectedIdx, int startY) {
+        int btnWidth = 220;
+        int btnHeight = 45;
+        int btnX = (Utils.WIDTH - btnWidth) / 2;
+        int spacing = 60;
+
+        gd.setFont(new Font("Arial", Font.BOLD, 18));
+
+        for (int i = 0; i < options.length; i++) {
+            int btnY = startY + (i * spacing);
+
+            if (i == selectedIdx) {
+                gd.setColor(new Color(255, 215, 0, 220));
+                gd.fillRoundRect(btnX, btnY, btnWidth, btnHeight, 15, 15);
+
+                gd.setColor(Color.WHITE);
+                gd.setStroke(new BasicStroke(3));
+                gd.drawRoundRect(btnX, btnY, btnWidth, btnHeight, 15, 15);
+
+                gd.setColor(Color.BLACK);
+            } else {
+                gd.setColor(new Color(40, 40, 40, 200));
+                gd.fillRoundRect(btnX, btnY, btnWidth, btnHeight, 15, 15);
+
+                gd.setColor(Color.GRAY);
+                gd.setStroke(new BasicStroke(1));
+                gd.drawRoundRect(btnX, btnY, btnWidth, btnHeight, 15, 15);
+
+                gd.setColor(Color.WHITE);
+            }
+
+            FontMetrics metrics = gd.getFontMetrics(gd.getFont());
+            int textX = btnX + (btnWidth - metrics.stringWidth(options[i])) / 2;
+            int textY = btnY + ((btnHeight - metrics.getHeight()) / 2) + metrics.getAscent();
+            gd.drawString(options[i], textX, textY);
+        }
+    }
+
+    // Hiển thị trạng thái âm thanh ở góc khi đang chơi
+    private void drawAudioHUD(Graphics2D gd) {
+        gd.setFont(new Font("Arial", Font.BOLD, 12));
+        if (SoundManager.isMuted()) {
+            gd.setColor(Color.RED);
+            gd.drawString("🔊 SOUND: OFF (M)", Utils.WIDTH - 130, 25);
+        } else {
+            gd.setColor(Color.GREEN);
+            gd.drawString("🔊 SOUND: ON (M)", Utils.WIDTH - 130, 25);
+        }
+    }
+
+    // Hàm phụ trợ căn giữa dòng chữ theo chiều ngang màn hình
+    private void drawCenteredString(Graphics2D gd, String text, int y) {
+        FontMetrics metrics = gd.getFontMetrics(gd.getFont());
+        int x = (Utils.WIDTH - metrics.stringWidth(text)) / 2;
+        gd.drawString(text, x, y);
     }
 }

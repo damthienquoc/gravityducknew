@@ -168,7 +168,7 @@ public class Player {
         if (key == KeyEvent.VK_SPACE) {
             if (daoChieu) {
                 flipGravity180();
-//                SoundManager.playSound("/sound/Space.wav");
+                SoundManager.playSound("/sound/Space.wav");
                 daoChieu = false;
             }
         }
@@ -256,7 +256,7 @@ public class Player {
 
                     if (daVaoTrungTam && !daXoayTaiTile) {
                         rotateGravity();
-//                        SoundManager.playSound("/sound/Rotate.wav");
+                        SoundManager.playSound("/sound/Rotate.wav");
 
                         // Căn chỉnh Vịt nằm chính giữa ô Rotate Tile ngay khi xoay
                         vTriX = tamTileX - kichThuoc / 2f;
@@ -297,7 +297,8 @@ public class Player {
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_EGG1) {
-//                    SoundManager.playSound("/sound/egg.wav");
+                    SoundManager.playSound("/sound/egg.wav");
+                    mapData[hang][cot] = Utils.TILE_EGG2;
                     levelManager.nextLevel();
                     reset();
                     return;
@@ -316,7 +317,7 @@ public class Player {
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_TRAP1 || mapData[hang][cot] == Utils.TILE_TRAP2 || mapData[hang][cot] == Utils.TILE_TRAP3 || mapData[hang][cot] == Utils.TILE_TRAP4) {
-//                    SoundManager.playSound("/sound/Dead.wav");
+                    SoundManager.playSound("/sound/Dead.wav");
                     reset();
                     return;
                 }
@@ -352,5 +353,10 @@ public class Player {
         daoChieu = false;
         daXoayTaiTile = false;
         gravity = Utils.Gravity.DOWN;
+    }
+    public void stopMovement() {
+        this.huongDiChuyen = 0;
+        this.vTocX = 0;
+        this.vTocY = 0;
     }
 }
