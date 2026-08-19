@@ -2,15 +2,25 @@ package com.gravityducknew;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 public class Player {
     public float vTriX, vTriY;
     public float vTocX, vTocY;
-    public final float gtTrongLuc = 0.5f; // Trọng lực vừa phải
+    public final float gtTrongLuc = 0.5f;
     public final float tocDo = 4f;
     public final float kichThuoc = 32;
     public int huongDiChuyen = 0; // -1: Trái, 0: Đứng yên, 1: Phải
     public boolean daoChieu = false;
+
+    // Hướng nhìn ngang của Vịt (1: Phải, -1: Trái)
+    private int huongNhin = 1;
+
+    // Ảnh Spritesheet
+    private BufferedImage idleImage;
+    private BufferedImage walkImage;
 
     // Biến chống lặp xoay khi dính vào ô Rotate
     private boolean daXoayTaiTile = false;
@@ -21,32 +31,51 @@ public class Player {
     public Player(float viTriBatDauX, float vTriBatDauY) {
         this.vTriBatDauX = viTriBatDauX;
         this.vTriBatDauY = vTriBatDauY;
+        loadPlayerSprites();
         reset();
     }
 
+    private void loadPlayerSprites() {
+        try {
+            BufferedImage player = ImageIO.read(getClass().getResourceAsStream("/image/Player.png"));
+            int size = Utils.TILE_SIZE;
+
+            // Cắt ảnh lùi vào +5px và -10px đồng bộ với Map
+            walkImage = player.getSubimage(0 , 0 , size, size);
+            idleImage = player.getSubimage(size * 6, size , size , size );
+        } catch (Exception e) {
+            System.out.println("Lỗi: Không thể tải sprite Duck.png!");
+            e.printStackTrace();
+        }
+    }
+
     public void update(LevelManager levelManager) {
+        // Cập nhật hướng nhìn ngang khi di chuyển
+        if (huongDiChuyen != 0) {
+            huongNhin = huongDiChuyen;
+        }
 
         // 1. Cập nhật vận tốc dựa theo Trọng Lực hiện tại
         switch (gravity) {
             case DOWN:
                 vTocY += gtTrongLuc;
                 if (vTocY > 10f) vTocY = 10f;
-                vTocX = huongDiChuyen * tocDo; // Di chuyển ngang
+                vTocX = huongDiChuyen * tocDo;
                 break;
             case UP:
                 vTocY -= gtTrongLuc;
                 if (vTocY < -10f) vTocY = -10f;
-                vTocX = huongDiChuyen * tocDo; // Di chuyển ngang
+                vTocX = huongDiChuyen * tocDo;
                 break;
             case LEFT:
                 vTocX -= gtTrongLuc;
                 if (vTocX < -10f) vTocX = -10f;
-                vTocY = huongDiChuyen * tocDo; // Di chuyển dọc
+                vTocY = huongDiChuyen * tocDo;
                 break;
             case RIGHT:
                 vTocX += gtTrongLuc;
                 if (vTocX > 10f) vTocX = 10f;
-                vTocY = huongDiChuyen * tocDo; // Di chuyển dọc
+                vTocY = huongDiChuyen * tocDo;
                 break;
         }
 
@@ -65,8 +94,66 @@ public class Player {
     }
 
     public void draw(Graphics2D gd) {
-        gd.setColor(Color.YELLOW);
-        gd.fillRect((int) vTriX, (int) vTriY, (int) kichThuoc, (int) kichThuoc);
+        gd.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        BufferedImage imgHienTai = (huongDiChuyen != 0) ? walkImage : idleImage;
+        if (imgHienTai == null) return;
+
+        AffineTransform oldTransform = gd.getTransform();
+
+        // 1. Tính tâm xoay
+        float tamX = vTriX + kichThuoc / 2f;
+        float tamY = vTriY + kichThuoc / 2f;
+        gd.translate(tamX, tamY);
+
+        // Biến xác định xem có cần lật ngược mặt con vịt hay không
+        boolean latAnh = false;
+
+        // 2. Xoay ma trận & Tính toán hướng lật mặt chuẩn theo góc nhìn màn hình
+        switch (gravity) {
+            case DOWN:
+                // Chân bám Sàn (Dưới)
+                // Di chuyển sang Trái (huongNhin = -1) -> Lật ảnh
+                if (huongNhin == -1) latAnh = true;
+                break;
+
+            case UP:
+                gd.rotate(Math.toRadians(180));
+                // Chân bám Trần (Trên) - Tọa độ X bị đảo ngược
+                // Khi đi sang Trái màn hình, Vịt đang tiến về hướng dương của trục cục bộ -> KHÔNG lật
+                // Khi đi sang Phải màn hình (huongNhin = 1) -> Lật ảnh
+                if (huongNhin == 1) latAnh = true;
+                break;
+
+            case LEFT:
+                gd.rotate(Math.toRadians(90));
+                // Chân bám Tường Trái - Vịt đứng dọc
+                // Đi Lên (huongNhin = -1) / Đi Xuống (huongNhin = 1)
+                if (huongNhin == -1) latAnh = true;
+                break;
+
+            case RIGHT:
+                gd.rotate(Math.toRadians(270));
+                // Chân bám Tường Phải - Tọa độ Y bị đảo ngược
+                // Đi Xuống màn hình (huongNhin = 1) -> Lật ảnh
+                if (huongNhin == 1) latAnh = true;
+                break;
+        }
+
+        // 3. Vẽ ảnh
+        int drawX = (int) (-kichThuoc / 2f);
+        int drawY = (int) (-kichThuoc / 2f);
+        int drawW = (int) kichThuoc;
+        int drawH = (int) kichThuoc;
+
+        if (latAnh) {
+            // Lật ảnh theo chiều ngang cục bộ
+            gd.drawImage(imgHienTai, drawX + drawW, drawY, -drawW, drawH, null);
+        } else {
+            gd.drawImage(imgHienTai, drawX, drawY, drawW, drawH, null);
+        }
+
+        gd.setTransform(oldTransform);
     }
 
     public void handleKeyPressed(KeyEvent e) {
@@ -81,6 +168,7 @@ public class Player {
         if (key == KeyEvent.VK_SPACE) {
             if (daoChieu) {
                 flipGravity180();
+//                SoundManager.playSound("/sound/Space.wav");
                 daoChieu = false;
             }
         }
@@ -109,7 +197,6 @@ public class Player {
                         }
                         vTocX = 0;
 
-                        // Nếu trọng lực đang đẩy sang Trái hoặc Phải -> Cho phép nhảy 180 độ
                         if (gravity == Utils.Gravity.LEFT || gravity == Utils.Gravity.RIGHT) {
                             daoChieu = true;
                         }
@@ -132,7 +219,6 @@ public class Player {
                         }
                         vTocY = 0;
 
-                        // Nếu trọng lực đang đẩy Lên hoặc Down -> Cho phép nhảy 180 độ
                         if (gravity == Utils.Gravity.UP || gravity == Utils.Gravity.DOWN) {
                             daoChieu = true;
                         }
@@ -142,30 +228,44 @@ public class Player {
         }
     }
 
-    // XỬ LÝ XOAY TRỌNG LỰC (ĐÃ SỬA HẾT LAG/GIẬT)
     public void handleRotateTileCollision(LevelManager levelManager) {
         int[][] mapData = levelManager.mapHienTai;
         boolean dangDungTrenRotateTile = false;
 
-        // Chỉ kiểm tra các ô xung quanh vị trí Vịt để tối ưu hiệu năng
         int startHang = Math.max(0, (int)(vTriY / Utils.TILE_SIZE));
         int endHang = Math.min(mapData.length - 1, (int)((vTriY + kichThuoc - 1) / Utils.TILE_SIZE));
         int startCot = Math.max(0, (int)(vTriX / Utils.TILE_SIZE));
         int endCot = Math.min(mapData[0].length - 1, (int)((vTriX + kichThuoc - 1) / Utils.TILE_SIZE));
+
+        // 1. Tính tâm hiện tại của Vịt
+        float tamVitX = vTriX + kichThuoc / 2f;
+        float tamVitY = vTriY + kichThuoc / 2f;
 
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_ROTATE) {
                     dangDungTrenRotateTile = true;
 
-                    if (!daXoayTaiTile) {
-                        rotateGravity(); // Xoay 90 độ
+                    // 2. Tính tâm của ô Rotate Tile
+                    float tamTileX = cot * Utils.TILE_SIZE + Utils.TILE_SIZE / 2f;
+                    float tamTileY = hang * Utils.TILE_SIZE + Utils.TILE_SIZE / 2f;
 
-                        // Reset triệt để vận tốc cũ để tránh bị cộng dồn giật giật
+                    // 3. Kiểm tra tâm Vịt đã đi vào vùng trung tâm của Tile chưa (Sai số 4px)
+                    boolean daVaoTrungTam = Math.abs(tamVitX - tamTileX) <= 4f &&
+                            Math.abs(tamVitY - tamTileY) <= 4f;
+
+                    if (daVaoTrungTam && !daXoayTaiTile) {
+                        rotateGravity();
+//                        SoundManager.playSound("/sound/Rotate.wav");
+
+                        // Căn chỉnh Vịt nằm chính giữa ô Rotate Tile ngay khi xoay
+                        vTriX = tamTileX - kichThuoc / 2f;
+                        vTriY = tamTileY - kichThuoc / 2f;
+
                         vTocX = 0;
                         vTocY = 0;
 
-                        // Đẩy nhẹ Vịt đi ngay lập tức theo hướng mới
+                        // Đẩy nhẹ Vịt bay tiếp theo hướng trọng lực mới
                         float lucKich = 2.0f;
                         switch (gravity) {
                             case DOWN:  vTocY = lucKich;  break;
@@ -174,15 +274,14 @@ public class Player {
                             case RIGHT: vTocX = lucKich;  break;
                         }
 
-                        daXoayTaiTile = true; // Khóa không cho xoay tiếp trong lúc đang ở trên ô này
-                        daoChieu = false;     // Đang bay trong không trung -> Chưa cho đập SPACE
+                        daXoayTaiTile = true;
+                        daoChieu = false;
                         return;
                     }
                 }
             }
         }
 
-        // Nếu Vịt đã thoát ra khỏi ô Rotate -> Unlock để có thể xoay lần kế tiếp
         if (!dangDungTrenRotateTile) {
             daXoayTaiTile = false;
         }
@@ -198,6 +297,7 @@ public class Player {
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_EGG1) {
+//                    SoundManager.playSound("/sound/egg.wav");
                     levelManager.nextLevel();
                     reset();
                     return;
@@ -216,6 +316,7 @@ public class Player {
         for (int hang = startHang; hang <= endHang; hang++) {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_TRAP1 || mapData[hang][cot] == Utils.TILE_TRAP2 || mapData[hang][cot] == Utils.TILE_TRAP3 || mapData[hang][cot] == Utils.TILE_TRAP4) {
+//                    SoundManager.playSound("/sound/Dead.wav");
                     reset();
                     return;
                 }
@@ -247,6 +348,7 @@ public class Player {
         vTocX = 0;
         vTocY = 0;
         huongDiChuyen = 0;
+        huongNhin = 1;
         daoChieu = false;
         daXoayTaiTile = false;
         gravity = Utils.Gravity.DOWN;
