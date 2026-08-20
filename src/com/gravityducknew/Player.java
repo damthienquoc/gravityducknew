@@ -23,7 +23,7 @@ public class Player {
 
     private boolean dangAnTrung = false;
     private int timerDelay = 0;
-    private final int THOI_GIAN_DELAY = 30; // ~0.5s ở 60 FPS
+    private final int THOI_GIAN_DELAY = 10; // ~0.5s ở 60 FPS
     private LevelManager levelManagerTam;
 
 

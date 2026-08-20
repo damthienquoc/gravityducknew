@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class LevelManager {
     private int levelHienTai = 1;
-    private int maxLevel = 2;
+    private int maxLevel = 3;
     public int[][] mapHienTai = new int[15][20];
 
     public LevelManager() {
