@@ -16,7 +16,6 @@ public class Map {
 
             int size = Utils.TILE_SIZE;
 
-            // Đồng bộ toàn bộ thông số cắt: x + 5, y + 5, width - 10, height - 10
             wall1 = tiles.getSubimage(size + 5, 0 + 5, size - 10, size - 10);
             empty = tiles.getSubimage(0 + 5, 0 + 5, size - 10, size - 10);
             wall2 = tiles.getSubimage(0 + 5, size + 5, size - 10, size - 10);
@@ -43,8 +42,6 @@ public class Map {
             loadImgMap();
         }
 
-        // Đảm bảo đồ họa Pixel Art hiển thị sắc nét khi scale lên màn hình
-        gd.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
         int[][] mapData = levelManager.mapHienTai;
 

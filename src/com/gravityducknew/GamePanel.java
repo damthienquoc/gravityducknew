@@ -16,10 +16,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private BufferedImage bgImage;
 
-    // Quản lý lựa chọn Menu chính (0: PLAY GAME, 1: SOUND, 2: EXIT)
     private int selectedOption = 0;
-
-    // Quản lý lựa chọn Menu Pause (0: RESUME, 1: MAIN MENU)
     private int selectedPauseOption = 0;
 
     public GamePanel() {
@@ -31,7 +28,6 @@ public class GamePanel extends JPanel implements Runnable {
         try {
             bgImage = ImageIO.read(getClass().getResourceAsStream("/image/BG.png"));
         } catch (Exception e) {
-            System.out.println("Lỗi: Không tìm thấy ảnh nền BG.png");
             e.printStackTrace();
         }
 
@@ -40,12 +36,10 @@ public class GamePanel extends JPanel implements Runnable {
             public void keyPressed(KeyEvent e) {
                 int key = e.getKeyCode();
 
-                // Phím M: Bật/Tắt âm thanh nhanh
                 if (key == KeyEvent.VK_M) {
                     SoundManager.toggleMute();
                 }
 
-                // 1. ĐANG Ở MENU CHÍNH
                 if (Utils.gameState == Utils.GameState.MENU) {
                     if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
                         selectedOption--;
@@ -65,20 +59,16 @@ public class GamePanel extends JPanel implements Runnable {
                         }
                     }
                 }
-                // 2. ĐANG CHƠI GAME
                 else if (Utils.gameState == Utils.GameState.PLAYING) {
-                    // Bấm ESC hoặc P để Bật PAUSE
                     if (key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_P) {
                         Utils.gameState = Utils.GameState.PAUSE;
                         player.stopMovement();
-                        selectedPauseOption = 0; // Reset con trỏ về RESUME
+                        selectedPauseOption = 0;
                         return;
                     }
                     player.handleKeyPressed(e);
                 }
-                // 3. ĐANG Ở TRẠNG THÁI PAUSE
                 else if (Utils.gameState == Utils.GameState.PAUSE) {
-                    // Bấm ESC hoặc P để Hủy PAUSE (Tiếp tục chơi)
                     if (key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_P) {
                         Utils.gameState = Utils.GameState.PLAYING;
                         return;
@@ -94,10 +84,10 @@ public class GamePanel extends JPanel implements Runnable {
                     }
                     if (key == KeyEvent.VK_ENTER) {
                         if (selectedPauseOption == 0) {
-                            Utils.gameState = Utils.GameState.PLAYING; // Tiếp tục chơi
+                            Utils.gameState = Utils.GameState.PLAYING;
                         } else if (selectedPauseOption == 1) {
-                            player.reset(); // Reset vị trí Player
-                            Utils.gameState = Utils.GameState.MENU; // Trở về Menu chính
+                            player.reset();
+                            Utils.gameState = Utils.GameState.MENU;
                         }
                     }
                 }
@@ -141,7 +131,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void update() {
-        // Chỉ cập nhật nhân vật khi đang chơi (không chạy khi Pause)
         if (Utils.gameState == Utils.GameState.PLAYING) {
             player.update(levelManager);
         }
@@ -152,11 +141,9 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D gd = (Graphics2D) g;
 
-        // Bật làm mượt nét chữ và hình vẽ
         gd.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gd.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // VẼ BACKGROUND
         if (bgImage != null) {
             gd.drawImage(bgImage, 0, 0, Utils.WIDTH, Utils.HEIGHT, null);
         } else {
@@ -164,31 +151,27 @@ public class GamePanel extends JPanel implements Runnable {
             gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
         }
 
-        // VẼ THEO TRẠNG THÁI
         if (Utils.gameState == Utils.GameState.MENU) {
             drawMenu(gd);
         } else if (Utils.gameState == Utils.GameState.PLAYING) {
             map.drawMap(gd, levelManager);
             player.draw(gd);
-            drawAudioHUD(gd);
+            drawHUD(gd);
         } else if (Utils.gameState == Utils.GameState.PAUSE) {
-            // Giữ nguyên khung cảnh game ở dưới, đè menu Pause lên trên
             map.drawMap(gd, levelManager);
             player.draw(gd);
-            drawAudioHUD(gd);
+            drawHUD(gd);
             drawPauseMenu(gd);
         }
-        else if (Utils.gameState == Utils.GameState.WIN) { // THÊM MÀN HÌNH WIN
+        else if (Utils.gameState == Utils.GameState.WIN) {
             map.drawMap(gd, levelManager);
             player.draw(gd);
             drawWinScreen(gd);
         }
 
-
         gd.dispose();
     }
 
-    // --- HÀM VẼ MENU CHÍNH ---
     private void drawMenu(Graphics2D gd) {
         gd.setColor(new Color(0, 0, 0, 180));
         gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
@@ -208,9 +191,7 @@ public class GamePanel extends JPanel implements Runnable {
         drawCenteredString(gd, "Phím M: Bật/Tắt nhanh âm thanh", Utils.HEIGHT - 30);
     }
 
-    // --- HÀM VẼ PAUSE MENU ---
     private void drawPauseMenu(Graphics2D gd) {
-        // Lớp phủ đen mờ đè lên game
         gd.setColor(new Color(0, 0, 0, 190));
         gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
 
@@ -226,7 +207,6 @@ public class GamePanel extends JPanel implements Runnable {
         drawCenteredString(gd, "Nhấn ESC hoặc P để tiếp tục chơi", Utils.HEIGHT - 50);
     }
 
-    // --- HÀM DÙNG CHUNG ĐỂ VẼ NÚT BẤM ---
     private void drawButtonList(Graphics2D gd, String[] options, int selectedIdx, int startY) {
         int btnWidth = 220;
         int btnHeight = 45;
@@ -266,11 +246,9 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void drawWinScreen(Graphics2D gd) {
-        // Lớp phủ tối mờ
         gd.setColor(new Color(0, 0, 0, 200));
         gd.fillRect(0, 0, Utils.WIDTH, Utils.HEIGHT);
 
-        // Dòng chữ chúc mừng
         gd.setFont(new Font("Arial", Font.BOLD, 36));
         gd.setColor(Color.YELLOW);
         drawCenteredString(gd, "YOU WIN!", Utils.HEIGHT / 3);
@@ -284,19 +262,21 @@ public class GamePanel extends JPanel implements Runnable {
         drawCenteredString(gd, "Nhấn ENTER để về Main Menu", Utils.HEIGHT - 80);
     }
 
-    // Hiển thị trạng thái âm thanh ở góc khi đang
-    private void drawAudioHUD(Graphics2D gd) {
+    private void drawHUD(Graphics2D gd) {
         gd.setFont(new Font("Arial", Font.BOLD, 12));
+
+        gd.setColor(Color.YELLOW);
+        int currentLevel = levelManager.getCurrentLevel(); // Giả định phương thức lấy số màn hiện tại
+        gd.drawString("Level " + currentLevel, 20, 25);
         if (SoundManager.isMuted()) {
             gd.setColor(Color.RED);
-            gd.drawString("🔊 SOUND: OFF (M)", Utils.WIDTH - 130, 25);
+            gd.drawString("SOUND: OFF (M)", Utils.WIDTH - 130, 25);
         } else {
             gd.setColor(Color.GREEN);
-            gd.drawString("🔊 SOUND: ON (M)", Utils.WIDTH - 130, 25);
+            gd.drawString("SOUND: ON (M)", Utils.WIDTH - 130, 25);
         }
     }
 
-    // Hàm phụ trợ căn giữa dòng chữ theo chiều ngang màn hình
     private void drawCenteredString(Graphics2D gd, String text, int y) {
         FontMetrics metrics = gd.getFontMetrics(gd.getFont());
         int x = (Utils.WIDTH - metrics.stringWidth(text)) / 2;

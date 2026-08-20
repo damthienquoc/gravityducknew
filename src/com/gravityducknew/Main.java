@@ -10,11 +10,11 @@ public class Main {
 
         GamePanel gamePanel = new GamePanel();
         window.add(gamePanel);
-        window.pack(); // Tự co giãn vừa khít màn hình 640x480 của GamePanel
+        window.pack();
 
-        window.setLocationRelativeTo(null); // Đưa cửa sổ ra chính giữa màn hình
+        window.setLocationRelativeTo(null);
         window.setVisible(true);
 
-        gamePanel.startGameThread(); // Bắt đầu vòng lặp
+        gamePanel.startGameThread();
     }
 }

@@ -45,4 +45,7 @@ public class LevelManager {
         levelHienTai = 1;
         loadLevel();
     }
+    public int getCurrentLevel() {
+        return levelHienTai;
+    }
 }

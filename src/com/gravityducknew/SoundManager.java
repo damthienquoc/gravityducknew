@@ -9,16 +9,16 @@ public class SoundManager {
     private static Clip bgmClip;
     private static boolean isMuted = false;
 
-    // Bật/Tắt âm thanh
+
     public static void toggleMute() {
         isMuted = !isMuted;
         if (isMuted) {
             if (bgmClip != null && bgmClip.isRunning()) {
-                bgmClip.stop(); // Ngắt nhạc khi Mute
+                bgmClip.stop();
             }
         } else {
             if (bgmClip != null) {
-                bgmClip.start(); // Phát tiếp khi Unmute
+                bgmClip.start();
                 bgmClip.loop(Clip.LOOP_CONTINUOUSLY);
             }
         }
@@ -29,7 +29,7 @@ public class SoundManager {
     }
 
     public static void playSound(String path) {
-        if (isMuted) return; // Nếu đang Mute thì không phát hiệu ứng
+        if (isMuted) return;
 
         new Thread(() -> {
             try {

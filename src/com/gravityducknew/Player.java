@@ -13,24 +13,24 @@ public class Player {
     public final float tocDo = 4f;
     public final float kichThuoc = 32;
 
-    // -1: Sang trái / Đi xuống (tùy trọng lực), 0: Đứng yên, 1: Sang phải / Đi lên
+
     public int huongDiChuyen = 0;
     public boolean daoChieu = false;
 
-    // Hướng nhìn ngang/dọc của Vịt (1 hoặc -1)
+
     private int huongNhin = 1;
 
-    // Biến Delay khi ăn trứng
+
     private boolean dangAnTrung = false;
     private int timerDelay = 0;
     private final int THOI_GIAN_DELAY = 30; // ~0.5s ở 60 FPS
     private LevelManager levelManagerTam;
 
-    // Ảnh Spritesheet
+
     private BufferedImage idleImage;
     private BufferedImage walkImage;
 
-    // Biến chống lặp xoay khi dính vào ô Rotate
+
     private boolean daXoayTaiTile = false;
 
     public Utils.Gravity gravity = Utils.Gravity.DOWN;
@@ -57,7 +57,6 @@ public class Player {
     }
 
     public void update(LevelManager levelManager) {
-        // Logic Delay khi ăn trứng
         if (dangAnTrung) {
             timerDelay++;
             vTocX = 0;
@@ -78,44 +77,43 @@ public class Player {
             return;
         }
 
-        // Cập nhật hướng nhìn
+
         if (huongDiChuyen != 0) {
             huongNhin = huongDiChuyen;
         }
 
-        // 1. Cập nhật vận tốc di chuyển & Trọng lực theo hướng Trọng lực hiện tại
+
         switch (gravity) {
             case DOWN:
                 vTocY += gtTrongLuc;
                 if (vTocY > 10f) vTocY = 10f;
-                vTocX = huongDiChuyen * tocDo; // Dùng A/D (Trái/Phải)
+                vTocX = huongDiChuyen * tocDo;
                 break;
             case UP:
                 vTocY -= gtTrongLuc;
                 if (vTocY < -10f) vTocY = -10f;
-                vTocX = huongDiChuyen * tocDo; // Dùng A/D (Trái/Phải)
+                vTocX = huongDiChuyen * tocDo;
                 break;
             case LEFT:
                 vTocX -= gtTrongLuc;
                 if (vTocX < -10f) vTocX = -10f;
-                vTocY = huongDiChuyen * tocDo; // Dùng W/S hoặc Up/Down (Lên/Xuống)
+                vTocY = huongDiChuyen * tocDo;
                 break;
             case RIGHT:
                 vTocX += gtTrongLuc;
                 if (vTocX > 10f) vTocX = 10f;
-                vTocY = huongDiChuyen * tocDo; // Dùng W/S hoặc Up/Down (Lên/Xuống)
+                vTocY = huongDiChuyen * tocDo;
                 break;
         }
 
-        // 2. Di chuyển X và kiểm tra va chạm X
+
         vTriX += vTocX;
         handleHorizontalCollision(levelManager.mapHienTai);
 
-        // 3. Di chuyển Y và kiểm tra va chạm Y
+
         vTriY += vTocY;
         handleVerticalCollision(levelManager.mapHienTai);
 
-        // 4. Kiểm tra các sự kiện ô đặc biệt
         handleRotateTileCollision(levelManager);
         handleTrapCollision(levelManager);
         handleEggCollision(levelManager);
@@ -170,12 +168,10 @@ public class Player {
         gd.setTransform(oldTransform);
     }
 
-    // Xử lý Phím bấm tự động nhận diện theo Trọng lực
     public void handleKeyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
         if (gravity == Utils.Gravity.DOWN || gravity == Utils.Gravity.UP) {
-            // Khi Trọng lực ở trên/dưới -> Dùng A/D hoặc Mũi tên Trái/Phải
             if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
                 huongDiChuyen = -1;
             }
@@ -183,16 +179,15 @@ public class Player {
                 huongDiChuyen = 1;
             }
         } else {
-            // Khi Trọng lực ở Trái/Phải -> Dùng W/S hoặc Mũi tên Lên/Xuống
+
             if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
-                huongDiChuyen = -1; // Bò lên trên
+                huongDiChuyen = -1;
             }
             if (key == KeyEvent.VK_S || key == KeyEvent.VK_DOWN) {
-                huongDiChuyen = 1;  // Bò xuống dưới
+                huongDiChuyen = 1;
             }
         }
 
-        // Nhấn Spacebar để đảo ngược 180 độ trọng lực
         if (key == KeyEvent.VK_SPACE) {
             if (daoChieu) {
                 flipGravity180();
@@ -296,7 +291,7 @@ public class Player {
 
                         vTocX = 0;
                         vTocY = 0;
-                        huongDiChuyen = 0; // Reset phím khi đổi góc quay
+                        huongDiChuyen = 0;
 
                         float lucKich = 2.0f;
                         switch (gravity) {
