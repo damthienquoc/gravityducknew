@@ -23,7 +23,7 @@ public class Player {
 
     private boolean dangAnTrung = false;
     private int timerDelay = 0;
-    private final int THOI_GIAN_DELAY = 10; // ~0.5s ở 60 FPS
+    private final int THOI_GIAN_DELAY = 10;
     private LevelManager levelManagerTam;
 
 
@@ -327,7 +327,7 @@ public class Player {
             for (int cot = startCot; cot <= endCot; cot++) {
                 if (mapData[hang][cot] == Utils.TILE_EGG1) {
                     SoundManager.playSound("/sound/egg.wav");
-                    mapData[hang][cot] = Utils.TILE_EGG2; // Đổi sang ảnh vỡ
+                    mapData[hang][cot] = Utils.TILE_EGG2;
 
                     dangAnTrung = true;
                     timerDelay = 0;

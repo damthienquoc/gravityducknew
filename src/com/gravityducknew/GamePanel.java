@@ -266,7 +266,7 @@ public class GamePanel extends JPanel implements Runnable {
         gd.setFont(new Font("Arial", Font.BOLD, 12));
 
         gd.setColor(Color.YELLOW);
-        int currentLevel = levelManager.getCurrentLevel(); // Giả định phương thức lấy số màn hiện tại
+        int currentLevel = levelManager.getCurrentLevel();
         gd.drawString("Level " + currentLevel, 20, 25);
         if (SoundManager.isMuted()) {
             gd.setColor(Color.RED);
